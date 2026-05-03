@@ -3,7 +3,7 @@
 // ========================
 
 // 🔴 REPLACE THIS WITH YOUR GOOGLE SCRIPT URL
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKacMhla-FUKDOqgzL48lFMx6iUZEQm8kH7Xg6e-lbSoMyJc_g3fPWwppzdzw6TXs1PQ/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRip7u4NQx0iRUf1wRsIzFPhBVqEiFtDjiev9PMxlCYCLf6VW0DbHfzPHyH19dkuyQvA/exec';
 
 // ---------- STATE ----------
 const CATEGORIES = [
