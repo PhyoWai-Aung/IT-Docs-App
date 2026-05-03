@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IT Documents | Knowledge Base</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <i class="fas fa-cloud logo-icon"></i>
+        <div class="logo-text">
+          <h1>IT Docs</h1>
+          <span>Knowledge Base</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="doc-count-badge">
+          <i class="fas fa-file-alt"></i>
+          <span id="docCount">0 documents</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-panel">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <button class="new-doc-btn" id="newDocBtn">
+          <i class="fas fa-plus-circle"></i> New Document
+        </button>
+        
+        <div class="filter-section">
+          <h3>Categories</h3>
+          <div class="category-list" id="categoryList"></div>
+        </div>
+      </aside>
+
+      <!-- Document List -->
+      <section class="doc-list-panel">
+        <div class="search-bar">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Search documents...">
+        </div>
+        
+        <div class="documents-grid" id="documentsGrid"></div>
+        
+        <div class="empty-state" id="emptyState" style="display: none;">
+          <i class="fas fa-folder-open"></i>
+          <p>No documents found</p>
+          <span>Create a new document or adjust your filters</span>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Edit/Create Modal -->
+  <div class="modal-overlay" id="docModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 id="modalTitle">New Document</h2>
+        <button class="modal-close" id="closeModalBtn">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="docTitle">Title</label>
+          <input type="text" id="docTitle" placeholder="Enter document title" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="docCategory">Category</label>
+          <select id="docCategory"></select>
+        </div>
+        <div class="form-group">
+          <label for="docContent">Content</label>
+          <textarea id="docContent" rows="6" placeholder="Write your documentation here..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="docTags">Tags (comma separated)</label>
+          <input type="text" id="docTags" placeholder="e.g., server, network, security">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelDocBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveDocBtn">Save Document</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Modal -->
+  <div class="modal-overlay" id="viewDocModal">
+    <div class="modal-container view-doc-container">
+      <div class="modal-header">
+        <h2 id="viewDocTitle">Document Title</h2>
+        <button class="modal-close" id="closeViewModalBtn">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="doc-detail-meta">
+          <span class="doc-category-badge" id="viewDocCategory">Category</span>
+          <span class="doc-date" id="viewDocDate">Date</span>
+        </div>
+        <div class="doc-tags-display" id="viewDocTags"></div>
+        <div class="doc-content-display" id="viewDocContent"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="closeViewBtn">Close</button>
+        <button class="btn btn-primary" id="editFromViewBtn">
+          <i class="fas fa-pen"></i> Edit Document
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
