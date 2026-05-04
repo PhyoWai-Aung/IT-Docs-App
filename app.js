@@ -1,11 +1,58 @@
 // ========================
-// IT Documents App - GitHub Pages Ready
+// IT Documents App
 // ========================
 
-// 🔴 REPLACE THIS WITH YOUR GOOGLE SCRIPT URL
+// Google Drive API URL
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRip7u4NQx0iRUf1wRsIzFPhBVqEiFtDjiev9PMxlCYCLf6VW0DbHfzPHyH19dkuyQvA/exec';
 
-// ---------- STATE ----------
+// ========================
+// AUTHENTICATION CHECK
+// ========================
+
+(function checkAuthentication() {
+  const user = localStorage.getItem('itdocs_user');
+  const sessionExpiry = localStorage.getItem('itdocs_session_expiry');
+  
+  if (!user || !sessionExpiry) {
+    window.location.href = 'login.html';
+    return;
+  }
+  
+  const now = new Date().getTime();
+  if (now >= parseInt(sessionExpiry)) {
+    localStorage.removeItem('itdocs_user');
+    localStorage.removeItem('itdocs_session_expiry');
+    window.location.href = 'login.html';
+    return;
+  }
+  
+  console.log('✅ Authenticated');
+})();
+
+// Display user info in header
+function displayUserInfo() {
+  const userData = JSON.parse(localStorage.getItem('itdocs_user') || '{}');
+  if (userData.name) {
+    const headerActions = document.querySelector('.header-actions');
+    if (headerActions) {
+      const userBadge = document.createElement('div');
+      userBadge.className = 'user-badge';
+      userBadge.innerHTML = `
+        <span class="user-avatar">${userData.avatar || '👤'}</span>
+        <span class="user-name">${userData.name}</span>
+        <button class="logout-btn" onclick="window.logout()" title="Sign out">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      `;
+      headerActions.insertBefore(userBadge, headerActions.firstChild);
+    }
+  }
+}
+
+// ========================
+// CATEGORIES & DOCUMENTS
+// ========================
+
 const CATEGORIES = [
   { id: 'all', name: 'All Documents', icon: 'fa-folder' },
   { id: 'network', name: 'Network', icon: 'fa-network-wired' },
@@ -50,7 +97,10 @@ let currentCategory = 'all';
 let searchTerm = '';
 let editingDocId = null;
 
-// ---------- DOM ELEMENTS ----------
+// ========================
+// DOM ELEMENTS
+// ========================
+
 const categoryListEl = document.getElementById('categoryList');
 const documentsGridEl = document.getElementById('documentsGrid');
 const emptyStateEl = document.getElementById('emptyState');
@@ -76,7 +126,10 @@ const viewDocDate = document.getElementById('viewDocDate');
 const viewDocTags = document.getElementById('viewDocTags');
 const viewDocContent = document.getElementById('viewDocContent');
 
-// ---------- GOOGLE DRIVE (GET-only, No CORS issues) ----------
+// ========================
+// GOOGLE DRIVE FUNCTIONS
+// ========================
+
 async function loadDocumentsFromDrive() {
   try {
     const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAll`);
@@ -90,7 +143,6 @@ async function loadDocumentsFromDrive() {
       console.log('✅ Loaded', documents.length, 'documents from Drive');
       return true;
     } else {
-      console.log('📭 Using default documents');
       documents = getDefaultDocuments();
       return true;
     }
@@ -106,17 +158,9 @@ async function saveDocumentToDrive(doc) {
     const docJson = JSON.stringify(doc);
     const encodedData = encodeURIComponent(docJson);
     const url = `${GOOGLE_SCRIPT_URL}?action=save&data=${encodedData}`;
-    
     const response = await fetch(url);
     const result = await response.json();
-    
-    if (result.success) {
-      console.log('✅ Saved to Drive');
-      return true;
-    } else {
-      console.error('Save failed:', result.error);
-      return false;
-    }
+    return result.success;
   } catch (error) {
     console.error('Error saving:', error);
     return false;
@@ -135,26 +179,16 @@ async function deleteDocumentFromDrive(id) {
   }
 }
 
-// ---------- UTILS ----------
+// ========================
+// UTILS
+// ========================
+
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
 }
 
 function formatDate(date) {
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric', month: 'short', day: 'numeric'
-  });
-}
-
-function getFilteredDocuments() {
-  return documents.filter(doc => {
-    const matchesCategory = currentCategory === 'all' || doc.category === currentCategory;
-    const lowerSearch = searchTerm.toLowerCase();
-    return doc.title.toLowerCase().includes(lowerSearch) ||
-      doc.tags.some(tag => tag.toLowerCase().includes(lowerSearch)) ||
-      doc.content.toLowerCase().includes(lowerSearch)
-      ? matchesCategory : false;
-  });
+  return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function escapeHtml(text) {
@@ -170,14 +204,33 @@ function populateCategorySelect() {
     .map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
 }
 
-// ---------- RENDER ----------
+function getFilteredDocuments() {
+  return documents.filter(doc => {
+    const matchesCategory = currentCategory === 'all' || doc.category === currentCategory;
+    const lowerSearch = searchTerm.toLowerCase();
+    return (doc.title.toLowerCase().includes(lowerSearch) ||
+      doc.tags.some(tag => tag.toLowerCase().includes(lowerSearch)) ||
+      doc.content.toLowerCase().includes(lowerSearch)) && matchesCategory;
+  });
+}
+
+// ========================
+// RENDER
+// ========================
+
 function renderCategories() {
-  categoryListEl.innerHTML = CATEGORIES.map(cat => {
-    return `<button class="category-item ${currentCategory === cat.id ? 'active' : ''}" data-category="${cat.id}">
-      <i class="fas ${cat.icon}"></i> ${cat.name}</button>`;
-  }).join('');
+  categoryListEl.innerHTML = CATEGORIES.map(cat => `
+    <button class="category-item ${currentCategory === cat.id ? 'active' : ''}" data-category="${cat.id}">
+      <i class="fas ${cat.icon}"></i> ${cat.name}
+    </button>
+  `).join('');
+
   document.querySelectorAll('.category-item').forEach(btn => {
-    btn.addEventListener('click', (e) => setCategory(e.currentTarget.dataset.category));
+    btn.addEventListener('click', (e) => {
+      currentCategory = e.currentTarget.dataset.category;
+      renderCategories();
+      renderDocuments();
+    });
   });
 }
 
@@ -205,7 +258,8 @@ function renderDocuments() {
           <button class="icon-btn edit-doc-btn" data-id="${doc.id}"><i class="fas fa-pen"></i></button>
           <button class="icon-btn delete-btn delete-doc-btn" data-id="${doc.id}"><i class="fas fa-trash-alt"></i></button>
         </div>
-      </div>`).join('');
+      </div>
+    `).join('');
 
     document.querySelectorAll('.doc-card').forEach(card => {
       card.addEventListener('click', (e) => {
@@ -219,15 +273,13 @@ function renderDocuments() {
       btn.addEventListener('click', (e) => { e.stopPropagation(); deleteDocument(btn.dataset.id); });
     });
   }
-  updateDocCount();
-}
-
-function updateDocCount() {
+  
   docCountSpan.textContent = `${documents.length} document${documents.length !== 1 ? 's' : ''}`;
 }
 
-// ---------- ACTIONS ----------
-function setCategory(categoryId) { currentCategory = categoryId; renderCategories(); renderDocuments(); }
+// ========================
+// ACTIONS
+// ========================
 
 function openNewDocModal() {
   editingDocId = null;
@@ -274,6 +326,7 @@ async function saveDocumentFromModal() {
   docModal.classList.remove('active');
   editingDocId = null;
   renderDocuments();
+  renderCategories();
 }
 
 async function deleteDocument(id) {
@@ -286,12 +339,18 @@ async function deleteDocument(id) {
 function openViewModal(docId) {
   const doc = documents.find(d => d.id === docId);
   if (!doc) return;
+  
   viewDocTitle.textContent = doc.title;
   viewDocCategory.textContent = getCategoryName(doc.category);
   viewDocDate.innerHTML = `<i class="far fa-calendar-alt"></i> ${formatDate(doc.createdAt)}`;
   viewDocTags.innerHTML = doc.tags.map(tag => `<span class="doc-tag">#${escapeHtml(tag)}</span>`).join('');
-  viewDocContent.innerHTML = `<div class="doc-content-text">${escapeHtml(doc.content) || 'No content.'}</div>
-    <div class="content-toolbar"><button class="copy-btn" onclick="copyContent('${doc.id}')"><i class="fas fa-copy"></i> Copy</button></div>`;
+  viewDocContent.innerHTML = `
+    <div>${escapeHtml(doc.content) || 'No content.'}</div>
+    <div class="content-toolbar">
+      <button class="copy-btn" onclick="copyContent('${doc.id}')"><i class="fas fa-copy"></i> Copy</button>
+    </div>
+  `;
+  
   viewDocModal.dataset.docId = docId;
   viewDocModal.classList.add('active');
 }
@@ -303,8 +362,11 @@ function copyContent(docId) {
   if (!doc) return;
   navigator.clipboard.writeText(doc.content).then(() => {
     const btn = document.querySelector('.copy-btn');
-    if (btn) { btn.innerHTML = '<i class="fas fa-check"></i> Copied!'; btn.classList.add('copied');
-      setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy"></i> Copy'; btn.classList.remove('copied'); }, 2000); }
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy"></i> Copy'; btn.classList.remove('copied'); }, 2000);
+    }
   });
 }
 
@@ -313,7 +375,10 @@ function editFromView() {
   if (docId) { closeViewModal(); openEditModal(docId); }
 }
 
-// ---------- EVENT LISTENERS ----------
+// ========================
+// EVENT LISTENERS
+// ========================
+
 newDocBtn.addEventListener('click', openNewDocModal);
 closeModalBtn.addEventListener('click', () => docModal.classList.remove('active'));
 cancelDocBtn.addEventListener('click', () => docModal.classList.remove('active'));
@@ -321,9 +386,12 @@ saveDocBtn.addEventListener('click', saveDocumentFromModal);
 closeViewModalBtn.addEventListener('click', closeViewModal);
 closeViewBtn.addEventListener('click', closeViewModal);
 editFromViewBtn.addEventListener('click', editFromView);
+
 docModal.addEventListener('click', (e) => { if (e.target === docModal) docModal.classList.remove('active'); });
 viewDocModal.addEventListener('click', (e) => { if (e.target === viewDocModal) closeViewModal(); });
+
 searchInput.addEventListener('input', (e) => { searchTerm = e.target.value; renderDocuments(); });
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     if (viewDocModal.classList.contains('active')) closeViewModal();
@@ -331,13 +399,17 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ---------- INIT ----------
+// ========================
+// INITIALIZATION
+// ========================
+
 async function initApp() {
   populateCategorySelect();
   await loadDocumentsFromDrive();
   renderCategories();
   renderDocuments();
-  console.log('✅ App ready with', documents.length, 'documents');
+  displayUserInfo();
+  console.log('✅ App initialized with', documents.length, 'documents');
 }
 
 initApp();

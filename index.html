@@ -9,7 +9,6 @@
 </head>
 <body>
   <div class="app-container">
-    <!-- Header -->
     <header class="app-header">
       <div class="logo-area">
         <i class="fas fa-cloud logo-icon"></i>
@@ -26,29 +25,23 @@
       </div>
     </header>
 
-    <!-- Main Layout -->
     <div class="main-panel">
-      <!-- Sidebar -->
       <aside class="sidebar">
         <button class="new-doc-btn" id="newDocBtn">
           <i class="fas fa-plus-circle"></i> New Document
         </button>
-        
         <div class="filter-section">
           <h3>Categories</h3>
           <div class="category-list" id="categoryList"></div>
         </div>
       </aside>
 
-      <!-- Document List -->
       <section class="doc-list-panel">
         <div class="search-bar">
           <i class="fas fa-search"></i>
           <input type="text" id="searchInput" placeholder="Search documents...">
         </div>
-        
         <div class="documents-grid" id="documentsGrid"></div>
-        
         <div class="empty-state" id="emptyState" style="display: none;">
           <i class="fas fa-folder-open"></i>
           <p>No documents found</p>
@@ -58,19 +51,17 @@
     </div>
   </div>
 
-  <!-- Edit/Create Modal -->
+  <!-- Edit Modal -->
   <div class="modal-overlay" id="docModal">
     <div class="modal-container">
       <div class="modal-header">
         <h2 id="modalTitle">New Document</h2>
-        <button class="modal-close" id="closeModalBtn">
-          <i class="fas fa-times"></i>
-        </button>
+        <button class="modal-close" id="closeModalBtn"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
         <div class="form-group">
           <label for="docTitle">Title</label>
-          <input type="text" id="docTitle" placeholder="Enter document title" maxlength="100">
+          <input type="text" id="docTitle" placeholder="Enter document title">
         </div>
         <div class="form-group">
           <label for="docCategory">Category</label>
@@ -97,9 +88,7 @@
     <div class="modal-container view-doc-container">
       <div class="modal-header">
         <h2 id="viewDocTitle">Document Title</h2>
-        <button class="modal-close" id="closeViewModalBtn">
-          <i class="fas fa-times"></i>
-        </button>
+        <button class="modal-close" id="closeViewModalBtn"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
         <div class="doc-detail-meta">
@@ -111,13 +100,12 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="closeViewBtn">Close</button>
-        <button class="btn btn-primary" id="editFromViewBtn">
-          <i class="fas fa-pen"></i> Edit Document
-        </button>
+        <button class="btn btn-primary" id="editFromViewBtn"><i class="fas fa-pen"></i> Edit</button>
       </div>
     </div>
   </div>
 
+  <script src="auth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
