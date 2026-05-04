@@ -94,6 +94,13 @@ body {
   font-size: 1.2rem;
 }
 
+.user-avatar-img {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .user-name {
   color: white;
   font-size: 0.85rem;

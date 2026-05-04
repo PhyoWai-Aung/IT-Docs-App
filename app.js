@@ -37,16 +37,38 @@ function displayUserInfo() {
     if (headerActions) {
       const userBadge = document.createElement('div');
       userBadge.className = 'user-badge';
+
+      const avatarHtml = getAvatarHtml(userData.avatar);
+      const safeName = escapeHtml(userData.name);
+
       userBadge.innerHTML = `
-        <span class="user-avatar">${userData.avatar || '👤'}</span>
-        <span class="user-name">${userData.name}</span>
-        <button class="logout-btn" onclick="window.logout()" title="Sign out">
+        ${avatarHtml}
+        <span class="user-name">${safeName}</span>
+        <button id="logoutBtn" type="button" class="logout-btn" title="Sign out">
           <i class="fas fa-sign-out-alt"></i>
         </button>
       `;
       headerActions.insertBefore(userBadge, headerActions.firstChild);
+
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+          if (typeof window.logout === 'function') {
+            window.logout();
+          } else {
+            console.warn('Logout function is not available.');
+          }
+        });
+      }
     }
   }
+}
+
+function getAvatarHtml(avatar) {
+  if (typeof avatar === 'string' && /^https?:\/\//i.test(avatar)) {
+    return `<img class="user-avatar-img" src="${escapeHtml(avatar)}" alt="User avatar">`;
+  }
+  return `<span class="user-avatar">${escapeHtml(avatar || '👤')}</span>`;
 }
 
 // ========================
